@@ -1,6 +1,7 @@
 const spotifyLogin = document.querySelector("#spotify-login");
 const clientId = '891fdb069afc487993e49bca313005e6';
-const redirectUri = 'http://127.0.0.1:5500/spotify.html';
+import config from './config.js';
+const redirectUri = config.baseUri + '/spotify.html';
 
 spotifyLogin.addEventListener("click", event => {
     console.log("button clicked");
@@ -11,6 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await handleSpotifyCallback();
     await fetchSpotifyUserProfile();
 });
+
+
 
 // Spotify Docs implementation
 function generateRandomString(length) {
