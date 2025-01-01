@@ -1,18 +1,21 @@
-const spotifyLogin = document.querySelector("#spotify-login");
-const clientId = '891fdb069afc487993e49bca313005e6';
 import config from './config.js';
-const redirectUri = config.baseUri + '/spotify.html';
+
+const spotifyLogin = document.querySelector('#spotify-login');
+const clientId = config.clientId;
+const redirectUri = config.baseUri + config.redirectUri;
+
+if (window.localStorage.getItem('access_token') != null) {
+    //console.log('style.display: ' + document.getElementById('#spotify-login').style.display);
+    document.getElementById('spotify-login').style.display = 'none';
+    await fetchSpotifyUserProfile();
+} else {
+    document.getElementById('spotify-login').style.display = 'block';
+}
 
 spotifyLogin.addEventListener("click", event => {
     console.log("button clicked");
     redirectToSpotifyLogin();
 })
-
-document.addEventListener('DOMContentLoaded', async () => {
-    await handleSpotifyCallback();
-    await fetchSpotifyUserProfile();
-});
-
 
 
 // Spotify Docs implementation
@@ -68,47 +71,7 @@ async function redirectToSpotifyLogin() {
 }
 
 
-// Step 2: Handle Spotify redirect and get the authorization code
-async function handleSpotifyCallback() {
-    const params = new URLSearchParams(window.location.search);
-    const authorizationCode = params.get('code');
 
-    if (!authorizationCode) {
-        console.error('Authorization code not found in the callback.');
-        return;
-    }
-
-    const codeVerifier = window.localStorage.getItem('code_verifier');
-    if (!codeVerifier) {
-        console.error('Code verifier not found in storage.');
-        return;
-    }
-
-    // Exchange authorization code for access token
-    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            client_id: clientId,
-            grant_type: 'authorization_code',
-            code: authorizationCode,
-            redirect_uri: redirectUri,
-            code_verifier: codeVerifier
-        })
-    });
-
-    const tokenData = await tokenResponse.json();
-
-    if (tokenResponse.ok) {
-        console.log('Access Token:', tokenData.access_token);
-        console.log('Refresh Token:', tokenData.refresh_token);
-        // Save tokens for further API calls
-        window.localStorage.setItem('access_token', tokenData.access_token);
-        window.localStorage.setItem('refresh_token', tokenData.refresh_token);
-    } else {
-        console.error('Error fetching access token:', tokenData);
-    }
-}
 
 // Step 3: Use access token for Spotify API calls
 async function fetchSpotifyUserProfile() {
@@ -129,5 +92,3 @@ async function fetchSpotifyUserProfile() {
         console.error('Error fetching Spotify user data:', await response.json());
     }
 }
-
-
