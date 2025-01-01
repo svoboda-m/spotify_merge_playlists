@@ -1,3 +1,4 @@
+// This file handles login callback, stores tokens and refreshes them
 import config from './config.js';
 
 const clientId = config.clientId;
@@ -8,8 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = config.baseUri + config.mainUri;
 });
 
-// Step 2: Handle Spotify redirect and get the authorization code
+// This function handles Spotify login callback
 async function handleSpotifyCallback() {
+    // Extract authorization code
     const params = new URLSearchParams(window.location.search);
     const authorizationCode = params.get('code');
 
@@ -40,12 +42,54 @@ async function handleSpotifyCallback() {
     const tokenData = await tokenResponse.json();
 
     if (tokenResponse.ok) {
-        console.log('Access Token:', tokenData.access_token);
-        console.log('Refresh Token:', tokenData.refresh_token);
-        // Save tokens for further API calls
-        window.localStorage.setItem('access_token', tokenData.access_token);
-        window.localStorage.setItem('refresh_token', tokenData.refresh_token);
+        await handleTokens(tokenData.access_token, tokenData.refresh_token, tokenData.expiresIn)
     } else {
         console.error('Error fetching access token:', tokenData);
+    }
+}
+
+// This function stores access and refresh tokens to localStorage and calls scheduling token refresh
+async function handleTokens(accessToken, refreshToken, expiresIn) {
+    window.localStorage.setItem('access_token', accessToken);
+    window.localStorage.setItem('refresh_token', refreshToken);
+
+    scheduleTokenRefresh(expiresIn, refreshToken);
+}
+
+// This function schedules token refresh
+function scheduleTokenRefresh(expiresInSeconds, refreshToken) {
+    const refreshTime = (expiresInSeconds - 60) * 1000; // Refresh 1 minute before expiry
+
+    setTimeout(async () => {
+        try {
+            await refreshAccessToken(refreshToken);
+            console.log('Token refreshed successfully.');
+        } catch (error) {
+            console.error('Failed to refresh token:', error);
+        }
+    }, refreshTime);
+}
+
+// This function executes token refresh via calling API
+async function refreshAccessToken(refreshToken) {
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+            client_id: clientId,
+        }),
+    });
+
+    const data = await response.json();
+    if (data.access_token) {
+        window.localStorage.setItem('access_token', data.access_token);
+        return data.access_token;
+    } else {
+        console.error('Error refreshing access token:', data);
+        throw new Error('Could not refresh token');
     }
 }

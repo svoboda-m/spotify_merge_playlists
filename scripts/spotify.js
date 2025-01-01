@@ -1,9 +1,30 @@
 import { redirectToSpotifyLogin } from './login.js';
+import { fetchSpotifyUserProfile, fetchSpotifyUserPlaylists } from './endpoints.js';
+let userData;
+let playlists;
+let listOnlyUserOwned = true;
 
-if (window.localStorage.getItem('access_token') != null) {
-    //console.log('style.display: ' + document.getElementById('#spotify-login').style.display);
+console.log('access_token: ' + window.localStorage.getItem('access_token'));
+console.log('refresh_token: ' + window.localStorage.getItem('refresh_token'));
+
+if (window.localStorage.getItem('access_token')) {
     document.getElementById('spotify-login').style.display = 'none';
-    await fetchSpotifyUserProfile();
+        
+    userData = await fetchSpotifyUserProfile();
+    playlists = await fetchSpotifyUserPlaylists();
+
+    console.log(playlists);
+    console.log('Playlists:');
+    playlists.items.forEach(playlist => {
+        if (listOnlyUserOwned) {
+            if (playlist.owner.uri.includes(userData.id)) {
+                console.log(playlist.name);
+            }
+        }
+        else {
+            console.log(playlist.name);
+        }
+    });
 } else {
     document.getElementById('spotify-login').style.display = 'block';
     const spotifyLogin = document.querySelector('#spotify-login');
@@ -12,24 +33,4 @@ if (window.localStorage.getItem('access_token') != null) {
         console.log("button clicked");
         redirectToSpotifyLogin();
     })
-}
-
-// Step 3: Use access token for Spotify API calls
-async function fetchSpotifyUserProfile() {
-    const accessToken = window.localStorage.getItem('access_token');
-    if (!accessToken) {
-        console.error('Access token not found. Please log in.');
-        return;
-    }
-
-    const response = await fetch('https://api.spotify.com/v1/me', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-    });
-
-    if (response.ok) {
-        const userData = await response.json();
-        console.log('Spotify User Data:', userData);
-    } else {
-        console.error('Error fetching Spotify user data:', await response.json());
-    }
 }
