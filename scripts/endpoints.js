@@ -16,12 +16,7 @@ export async function fetchSpotifyUserProfile() {
         const userData = await response.json();
         console.log('Spotify User Data:', userData);
         return userData;
-    } else if (response.status == 401) {
-        console.log('Unauthorized');
-        window.localStorage.setItem('access_token', null);
-        console.log('access_token 2: ' + window.localStorage.getItem('access_token'));
-    }
-    else {
+    } else {
         console.error('Error fetching Spotify user data:', await response.json());
     }
 }
