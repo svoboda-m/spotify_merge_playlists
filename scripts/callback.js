@@ -43,7 +43,10 @@ async function handleSpotifyCallback() {
     console.log(tokenData);
 
     if (tokenResponse.ok) {
-        await handleTokens(tokenData.access_token, tokenData.refresh_token, tokenData.expires_in)
+        //await handleTokens(tokenData.access_token, tokenData.refresh_token, tokenData.expires_in)
+        window.localStorage.setItem('access_token', tokenData.access_token);
+        window.localStorage.setItem('refresh_token', tokenData.refresh_token);
+        window.localStorage.setItem('expires_at', Date.now() + (tokenData.expires_in*1000));
     } else {
         console.error('Error fetching access token:', tokenData);
     }
@@ -60,7 +63,6 @@ async function handleTokens(accessToken, refreshToken, expiresIn) {
 // This function schedules token refresh
 function scheduleTokenRefresh(expiresInSeconds, refreshToken) {
     const refreshTime = (expiresInSeconds - 60) * 1000; // Refresh 1 minute before expiry
-    console.log('scheduling token refresh in ' + refreshTime);
 
     setTimeout(async () => {
         try {
@@ -74,7 +76,7 @@ function scheduleTokenRefresh(expiresInSeconds, refreshToken) {
 
 // This function executes token refresh via calling API
 export async function refreshAccessToken(refreshToken) {
-    console.log('refreshing token');
+    console.log('Refreshing token.');
     const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {

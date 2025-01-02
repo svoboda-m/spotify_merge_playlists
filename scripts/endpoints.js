@@ -1,5 +1,15 @@
 // This file contains all API endpoints
 
+// This function executes fetching test
+export async function fetchTest() {
+    const accessToken = window.localStorage.getItem('access_token');
+
+    const response = await fetch('https://api.spotify.com/v1/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!response.ok) throw new Error("Fetch test failed.");
+}
+
 // This function fetches Spotify user profile details
 export async function fetchSpotifyUserProfile() {
     const accessToken = window.localStorage.getItem('access_token');
@@ -14,7 +24,6 @@ export async function fetchSpotifyUserProfile() {
 
     if (response.ok) {
         const userData = await response.json();
-        console.log('Spotify User Data:', userData);
         return userData;
     } else {
         console.error('Error fetching Spotify user data:', await response.json());

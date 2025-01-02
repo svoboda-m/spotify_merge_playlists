@@ -1,39 +1,21 @@
-import { redirectToSpotifyLogin } from './login.js';
-import { fetchSpotifyUserProfile, fetchSpotifyUserPlaylists } from './endpoints.js';
-import { renderPlaylists } from './ui.js';
-let userData;
-let playlists;
-let listOnlyUserOwned = true;
+import { renderUI, renderLoginPage } from './ui.js';
+import { fillUserData, fillPlaylists, getPlaylists } from './control.js';
+import { testAPIConnection, tokenValidityCheck } from './tokens.js';
 
-console.log('access_token: ' + window.localStorage.getItem('access_token'));
-console.log('refresh_token: ' + window.localStorage.getItem('refresh_token'));
 
-if (window.localStorage.getItem('access_token') != null) {
-    document.getElementById('spotify-login').style.display = 'none';
-        
-    userData = await fetchSpotifyUserProfile();
-    playlists = await fetchSpotifyUserPlaylists();
 
-    renderPlaylists(playlists, userData.id, listOnlyUserOwned);
+if (await testAPIConnection()) {
+    
+    if(!await tokenValidityCheck()) { // TODO: zajistit nacasovani validace
+        renderLoginPage();
+    } else {
+        document.getElementById('spotify-login').style.display = 'none';
+        await fillUserData();
+        await fillPlaylists();
+    
+        renderUI(getPlaylists());
+    }
+
 } else {
-    document.getElementById('spotify-login').style.display = 'block';
-    const spotifyLogin = document.getElementById('spotify-login');
-
-    spotifyLogin.addEventListener("click", event => {
-        redirectToSpotifyLogin();
-    });
+    renderLoginPage();
 }
-
-// const filterCheckbox = document.getElementById('filter-owned');
-
-// filterCheckbox.addEventListener('change', function() {
-//     if (this.checked) {
-//         console.log('checked');
-//         console.log(this.checked);
-//     } else {
-//         console.log('unchecked');
-//         console.log(this.checked);
-//     }
-
-//     renderPlaylists(playlists, userData.id, this.checked);
-// });
