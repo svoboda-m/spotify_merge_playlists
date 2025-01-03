@@ -1,64 +1,54 @@
 // This file handles all UI rendering
 import { redirectToSpotifyLogin } from './login.js';
 
-let listOnlyUserOwned = true;
+let callbacks = {};
+const spotifyLoginBtn = document.getElementById('spotify-login');
+const playlistsDiv = document.getElementById('playlists');
+const checkboxOwned = document.getElementById('filter-owned');
+const filtersDiv = document.getElementById('filters');
+
 
 export function renderUI(playlists) {
-    renderFilters();
-    updatePlaylists(playlists, listOnlyUserOwned);
+    document.getElementById('spotify-login').style.display = 'none';
+    showFilters();
+    updatePlaylists(playlists);
 }
 
-function renderFilters() {
-    let input = document.createElement('input');
-    input.type = 'checkbox';
-    input.id = 'filter-owned';
-    input.checked = listOnlyUserOwned;
-    document.getElementById('filters').appendChild(input);
+export function renderLoginPage() {
+    document.getElementById('spotify-login').style.display = 'block';
 
-    let label = document.createElement("label");
-    label.textContent = 'Zobraz pouze vlastní playlisty';
-    label.setAttribute('for', 'filter-owned');
-    document.getElementById('filters').appendChild(label);
-
-    const filterCheckbox = document.getElementById('filter-owned');
-
-    filterCheckbox.addEventListener('change', function() {
-    if (this.checked) {
-        console.log('checked');
-        console.log(this.checked);
-
-    } else {
-        console.log('unchecked');
-        console.log(this.checked);
-    }
-    listOnlyUserOwned = this.checked;
-    // TODO: zajistit moznost volani updatePlaylists(), potreba udelat podle ToDo app
+    spotifyLoginBtn.addEventListener("click", event => {
+        redirectToSpotifyLogin();
     });
 }
 
-function updatePlaylists(playlists, listOnlyUserOwned) {    
-    document.getElementById('playlists').textContent = '';
+export function setCheckboxOwned(checked) {
+    checkboxOwned.checked = checked;
+    checkboxOwned.dispatchEvent(new Event('change'));
+}
+
+export function setupEventListneres(input) {
+    callbacks = input;
+
+    checkboxOwned.addEventListener('change', () => {
+        callbacks.onFilterPlaylists({onlyUserOwned: checkboxOwned.checked});
+    })
+}
+
+function showFilters() {
+    const playlistsExists = callbacks.onGetPlaylists().length > 0;
+    filtersDiv.style.display = playlistsExists ? 'flex' : 'none';
+}
+
+export function updatePlaylists(playlists) {    
+    playlistsDiv.textContent = '';
     playlists.forEach((playlist) => {
-        if (listOnlyUserOwned && playlist.userOwned) {
-                renderLine(playlist.name);
-        }
-        else if (!listOnlyUserOwned) {
-            renderLine(playlist.name);
-        }
+        renderLine(playlist.name);
     });
 }
 
 function renderLine(playlistName) {
     let p = document.createElement('p');
     p.textContent = playlistName;
-    document.getElementById('playlists').appendChild(p);
-}
-
-export function renderLoginPage() {
-    document.getElementById('spotify-login').style.display = 'block';
-    const spotifyLogin = document.getElementById('spotify-login');
-
-    spotifyLogin.addEventListener("click", event => {
-        redirectToSpotifyLogin();
-    });
+    playlistsDiv.appendChild(p);
 }

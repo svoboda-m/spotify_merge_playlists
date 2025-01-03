@@ -1,5 +1,5 @@
-import { renderUI, renderLoginPage } from './ui.js';
-import { fillUserData, fillPlaylists, getPlaylists } from './control.js';
+import { renderUI, renderLoginPage, setupEventListneres } from './ui.js';
+import { fillUserData, fillPlaylists, getPlaylists, filterPlaylists, setDefaultValues } from './control.js';
 import { testAPIConnection, tokenValidityCheck } from './tokens.js';
 
 
@@ -9,11 +9,18 @@ if (await testAPIConnection()) {
     if(!await tokenValidityCheck()) { // TODO: zajistit nacasovani validace
         renderLoginPage();
     } else {
-        document.getElementById('spotify-login').style.display = 'none';
         await fillUserData();
         await fillPlaylists();
     
+        setupEventListneres({
+            onGetPlaylists: getPlaylists,
+            onFilterPlaylists: filters => {
+                filterPlaylists(filters);
+            }
+        });
+
         renderUI(getPlaylists());
+        setDefaultValues();
     }
 
 } else {

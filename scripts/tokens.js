@@ -59,3 +59,26 @@ async function refreshAccessToken() {
         return false;
     }
 }
+
+// This function stores access and refresh tokens to localStorage and calls scheduling token refresh
+export async function handleTokens(accessToken, refreshToken, expiresIn) {
+    window.localStorage.setItem('access_token', accessToken);
+    window.localStorage.setItem('refresh_token', refreshToken);
+    window.localStorage.setItem('expires_at', Date.now() + (expiresIn*1000));
+
+    //scheduleTokenRefresh(expiresIn, refreshToken);
+}
+
+// This function schedules token refresh
+function scheduleTokenRefresh(expiresInSeconds, refreshToken) {
+    const refreshTime = (expiresInSeconds - 60) * 1000; // Refresh 1 minute before expiry
+
+    setTimeout(async () => {
+        try {
+            await refreshAccessToken(refreshToken);
+            console.log('Token refreshed successfully.');
+        } catch (error) {
+            console.error('Failed to refresh token:', error);
+        }
+    }, refreshTime);
+}

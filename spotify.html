@@ -8,10 +8,17 @@
 </head>
 <body>
     <div class="container">
+        <h1>Sloučení playlistů ve službe Spotify</h1>
             <button id="spotify-login">Spotify login</button>
+        <div id="filters" class="hidden">
+            <label>
+                <input type="checkbox" id="filter-owned">
+                Zobrazit pouze vlastní playlisty
+            </label>
+        </div>
+        <div id="playlists" class="playlists"></div> 
     </div> 
-    <div id="filters" class="filters"></div>
-    <div id="playlists" class="playlists"></div> 
+
 
     <script type="module" src="scripts\spotify.js"></script>
 </body>

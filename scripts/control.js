@@ -1,4 +1,5 @@
 import { fetchSpotifyUserProfile, fetchSpotifyUserPlaylists } from './endpoints.js';
+import { updatePlaylists, setCheckboxOwned } from './ui.js';
 
 let playlists = [];
 let userData;
@@ -11,6 +12,16 @@ export async function fillPlaylists() {
     fetchedData.items.forEach(playlist => {
         addPlaylist(playlist.name, playlist.id, playlist.owner.uri);
     });
+}
+
+export async function fillUserData() {
+    console.log('Filling Spotify user data.');
+    let fetchedData = await fetchSpotifyUserProfile();
+    userData = {name: fetchedData.display_name, spotifyID: fetchedData.id};
+}
+
+export function setDefaultValues() {
+    setCheckboxOwned(true);
 }
 
 function addPlaylist(playlistName, spotifyID, ownerURI) {
@@ -26,11 +37,7 @@ export function getPlaylists() {
     return playlists;
 }
 
-export async function fillUserData() {
-    console.log('Filling Spotify user data.');
-    let fetchedData = await fetchSpotifyUserProfile();
-    userData = {name: fetchedData.display_name, spotifyID: fetchedData.id};
-}
+
 
 export function getUserID() {
     return userData.spotifyID;
@@ -38,5 +45,15 @@ export function getUserID() {
 
 export function getUserName() {
     return userData.name;
+}
+
+export function filterPlaylists(filters) {
+    let filteredPlaylists = playlists;
+
+    if (filters.onlyUserOwned) {
+        filteredPlaylists = filteredPlaylists.filter((playlist) => playlist.userOwned);
+    }
+
+    updatePlaylists(filteredPlaylists);
 }
 
