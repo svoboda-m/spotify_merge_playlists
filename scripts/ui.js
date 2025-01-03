@@ -3,7 +3,7 @@ import { redirectToSpotifyLogin } from './login.js';
 
 let callbacks = {};
 const spotifyLoginBtn = document.getElementById('spotify-login');
-const playlistsDiv = document.getElementById('playlists');
+const playlistUl = document.getElementById('playlists');
 const checkboxOwned = document.getElementById('filter-owned');
 const filtersDiv = document.getElementById('filters');
 
@@ -31,24 +31,47 @@ export function setupEventListneres(input) {
     callbacks = input;
 
     checkboxOwned.addEventListener('change', () => {
-        callbacks.onFilterPlaylists({onlyUserOwned: checkboxOwned.checked});
+        callbacks.onToggleFilters({onlyUserOwned: checkboxOwned.checked});
+    })
+
+    playlistUl.addEventListener('click', (event) => {
+        const target = event.target;
+        const playlistID = target.closest('li')?.dataset.id;
+
+        if (target.classList.contains('source-btn')) {
+            callbacks.onToggleSource(playlistID);
+        }
+
+        if (target.classList.contains('target-btn')) {
+            callbacks.onToggleTarget(playlistID);
+        }
     })
 }
 
 function showFilters() {
-    const playlistsExists = callbacks.onGetPlaylists().length > 0;
+    const playlistsExists = callbacks.onGetAllPlaylists().length > 0;
     filtersDiv.style.display = playlistsExists ? 'flex' : 'none';
 }
 
 export function updatePlaylists(playlists) {    
-    playlistsDiv.textContent = '';
+    playlistUl.textContent = '';
+
     playlists.forEach((playlist) => {
-        renderLine(playlist.name);
+        renderLine(playlist);
     });
 }
 
-function renderLine(playlistName) {
-    let p = document.createElement('p');
-    p.textContent = playlistName;
-    playlistsDiv.appendChild(p);
+function renderLine(playlist) {
+    // let li = document.createElement('li');
+    // li.textContent = playlist.name;
+    // playlistUl.appendChild(li);
+
+    playlistUl.innerHTML += 
+    `<li class="playlist-item" data-id="${playlist.id}">
+        <span>${playlist.name}</span>
+        <div>
+            <button class="source-btn">${playlist.source ? 'Source' : 'notSource'}</button>
+            <button class="target-btn">${playlist.target ? 'Target' : 'notTarget'}</button>
+        </div>
+    </li>`;
 }

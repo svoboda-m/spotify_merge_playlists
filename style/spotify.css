@@ -24,3 +24,32 @@ h1 {
 #filters {
     display: none;
 }
+
+.playlists {
+    list-style: none;
+    padding: 20px 0 0 0;
+    margin: 0;
+    min-width: 50%;
+}
+
+
+
+.playlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+}
+
+.playlist-item span {
+    flex-grow: 1;
+    margin-right: 10px;
+    max-width: 70%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }

@@ -1,9 +1,10 @@
 import { fetchSpotifyUserProfile, fetchSpotifyUserPlaylists } from './endpoints.js';
-import { updatePlaylists, setCheckboxOwned } from './ui.js';
+import { setCheckboxOwned } from './ui.js';
 
 let playlists = [];
 let userData;
 let id = 0;
+let onlyUserOwned;
 
 export async function fillPlaylists() {
     console.log('Filling Spotify playlists.');
@@ -34,10 +35,16 @@ function addPlaylist(playlistName, spotifyID, ownerURI) {
 }
 
 export function getPlaylists() {
-    return playlists;
+    if (onlyUserOwned) {
+        return playlists.filter((playlist) => playlist.userOwned);
+    } else {
+        return playlists;
+    }
 }
 
-
+export function getAllPlaylists() {
+    return playlists;
+}
 
 export function getUserID() {
     return userData.spotifyID;
@@ -47,13 +54,24 @@ export function getUserName() {
     return userData.name;
 }
 
-export function filterPlaylists(filters) {
-    let filteredPlaylists = playlists;
-
-    if (filters.onlyUserOwned) {
-        filteredPlaylists = filteredPlaylists.filter((playlist) => playlist.userOwned);
-    }
-
-    updatePlaylists(filteredPlaylists);
+export function toggleFilters(filters) {
+    onlyUserOwned = filters.onlyUserOwned;
 }
 
+export function toggleSource(playlistID) {
+    const playlist = getPlaylistByID(playlistID);
+    let isSource = playlist.source;
+
+    playlists[playlistID].source = !isSource;
+}
+
+export function toggleTarget(playlistID) {
+    const playlist = getPlaylistByID(playlistID);
+    let isTarget = playlist.target;
+
+    playlists[playlistID].target = !isTarget;
+}
+
+function getPlaylistByID(id) {
+    return playlists.find((playlist) => playlist.id === id) || null;
+}
