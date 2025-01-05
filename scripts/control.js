@@ -5,13 +5,15 @@ import {
     addTracksToPlaylist,
     deleteTracksFromPlaylist 
 } from './endpoints.js';
-import { setCheckboxOwned } from './ui.js';
+import { renderUI, setCheckboxOwned, setMessage } from './ui.js';
+import { testAPIConnection, tokenValidityCheck } from './tokens.js';
 
 let playlists = [];
 let sourcePlaylists = [];
 let targetPlaylist;
 let sourceSongs = [];
 let existingSongs = [];
+let loggedIn = false;
 let userData;
 let id = 0;
 let onlyUserOwned;
@@ -38,6 +40,15 @@ export async function fillInitData() {
         console.error('Error when filling init data.');
     }
 }
+export async function initApp() {
+    console.log('Initializing application.');
+    if(await testAPIConnection() && await tokenValidityCheck()){
+        loggedIn = true;
+        await fillInitData();
+        setDefaultValues();
+    }
+    renderUI(loggedIn, getPlaylists());
+}
 
 async function fillPlaylists() {
     console.log('Filling out Spotify playlists.');
@@ -56,23 +67,29 @@ async function fillUserData() {
 
 export async function mergePlaylists() {
     console.log('Merging playlists.');
-    let success = true;
+
+    if (!setSourcePlaylists()) {
+        setMessage('source');
+        return;
+    }
+    if (!setTargetPlaylist()) {
+        setMessage('target');
+        return;
+    }
 
     try {
-        setSourcePlaylists();
-        setTargetPlaylist();
         await getSourceSongs();
         await getExistingSongs();
         await deleteExistingSongs();
         await postSongs();
     } catch (error) {
         console.error(error);
-        success = false;
+        setMessage('merge-fail');
     } finally {
         clearPlaylists();
     }
 
-    return success;
+    setMessage('merge-success');
 }
 
 async function getSourceSongs() {
@@ -150,8 +167,11 @@ function setSourcePlaylists() {
                         .map(playlist => playlist.spotifyID);
 
     if (sourcePlaylists.length == 0) {
-        throw new Error('No sources found.');
+        return false;
+        //throw new Error('No sources found.');
     }
+
+    return true;
 }
 
 function setTargetPlaylist() {
@@ -159,9 +179,13 @@ function setTargetPlaylist() {
 
     if (playlistAsTarget != null) {
         targetPlaylist = playlistAsTarget.spotifyID;
-    } else {
-        throw new Error('Target not found.');
-    }    
+        return true;
+    } //else {
+        
+        // throw new Error('Target not found.');
+    //}   
+    
+    return false;
 }
 
 export function setDefaultValues() {

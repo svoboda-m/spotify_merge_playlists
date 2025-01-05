@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style\spotify.css">
     <title>Spotify - sloučení playlistů</title>
 </head>
 <body>
-    <div class="container">
+    <div class="app">
         <h1>Spotify</h1>
-        <h2>Sloučení playlistů</h2>
-            <button id="spotify-login">Spotify login</button>
+        <h2>Sloučení seznamů skladeb</h2>
+        <div id="spotify-login" class="container">
+            <p id="login-message">Nejprve je potřeba přihlásit se ke Spotify účtu.</p>
+            <button id="login-btn">Přihlásit se</button>
+        </div>
         <div id="filters" class="hidden">
             <label>
                 <input type="checkbox" id="filter-owned">
-                Zobrazit pouze vlastní playlisty
+                Zobrazit pouze vlastní seznamy skladeb
             </label>
         </div>
         <ul id="playlists" class="playlists"></ul> 
+        <div id="message-div" class="message">
+            <p id="message-text"></p>
+            <button id="clear-message"><i class="fa-solid fa-circle-xmark"></i></button>
+        </div>
         <button id="merge-playlists-btn">Sloučit seznamy skladeb</button>
     </div> 
 
