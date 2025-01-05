@@ -25,6 +25,10 @@ h1 {
     display: none;
 }
 
+#merge-playlists-btn {
+    display: none;
+}
+
 .playlists {
     list-style: none;
     padding: 20px 0 0 0;

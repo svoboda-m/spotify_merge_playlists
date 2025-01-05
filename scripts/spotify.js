@@ -2,25 +2,26 @@ import { testAPIConnection, tokenValidityCheck } from './tokens.js';
 import {
     renderUI, 
     renderLoginPage, 
-    setupEventListneres,
+    setupEventListeneres,
     updatePlaylists 
 } from './ui.js';
 import {
-    fillUserData,
-    fillPlaylists,
+    fillInitData,
     getAllPlaylists,
     getPlaylists,
     toggleFilters,
     toggleSource,
     toggleTarget,
-    setDefaultValues
+    setDefaultValues,
+    mergePlaylists
 } from './control.js';
 
-// TODO: zajistit, ze target muze byt jen jeden
-// TODO: zajistit, ze jeden playlist nemuze byt zdroj a cil zaroven
-// TODO: nacist pisne z oznacenych playlistu
-// TODO: nahrat nactene pisne do vybraneho playlistu
+
 // TODO: stylovani
+// TODO: presunout Login listener do setupEventListeneres + zobrazovat tlacitko na zaklade testAPIConnection a tokenValidityCheck (zrusit renderLoginPage)
+// TODO: predelat kontrolu accessToken v endpointech na metodu
+// TODO: doplnit chybove hlasky - neni zadny zdroj, neni vybran cil
+// TODO: doplnit upozorneni pred spustenim slouceni (vypsat zdroje a cile)
 
 
 if (await testAPIConnection()) {
@@ -28,10 +29,9 @@ if (await testAPIConnection()) {
     if(!await tokenValidityCheck()) { // TODO: zajistit nacasovani validace
         renderLoginPage();
     } else {
-        await fillUserData();
-        await fillPlaylists();
+        await fillInitData();
     
-        setupEventListneres({
+        setupEventListeneres({
             onGetAllPlaylists: getAllPlaylists,
             onToggleFilters: filters => {
                 toggleFilters(filters);
@@ -44,11 +44,16 @@ if (await testAPIConnection()) {
             onToggleTarget: playlistID => {
                 toggleTarget(playlistID);
                 updatePlaylists(getPlaylists());
+            },
+            onMergePlaylists: async () => {
+                const result = await mergePlaylists();
+                updatePlaylists(getPlaylists());
+                return result;
             }
         });
 
-        renderUI(getPlaylists());
         setDefaultValues();
+        renderUI(getPlaylists());
     }
 
 } else {

@@ -6,11 +6,13 @@ const spotifyLoginBtn = document.getElementById('spotify-login');
 const playlistUl = document.getElementById('playlists');
 const checkboxOwned = document.getElementById('filter-owned');
 const filtersDiv = document.getElementById('filters');
+const mergePlaylistsBtn = document.getElementById('merge-playlists-btn');
 
 
 export function renderUI(playlists) {
     document.getElementById('spotify-login').style.display = 'none';
     showFilters();
+    showMergeBtn()
     updatePlaylists(playlists);
 }
 
@@ -24,10 +26,9 @@ export function renderLoginPage() {
 
 export function setCheckboxOwned(checked) {
     checkboxOwned.checked = checked;
-    checkboxOwned.dispatchEvent(new Event('change'));
 }
 
-export function setupEventListneres(input) {
+export function setupEventListeneres(input) {
     callbacks = input;
 
     checkboxOwned.addEventListener('change', () => {
@@ -46,6 +47,15 @@ export function setupEventListneres(input) {
             callbacks.onToggleTarget(playlistID);
         }
     })
+
+    mergePlaylistsBtn.addEventListener('click', event => {
+        callbacks.onMergePlaylists().then(result => {
+            if (result) {
+                console.log('Merge sucessful.');
+            } else {
+                console.log('Merge failed.');
+            }});
+    })
 }
 
 function showFilters() {
@@ -53,7 +63,13 @@ function showFilters() {
     filtersDiv.style.display = playlistsExists ? 'flex' : 'none';
 }
 
+function showMergeBtn() {
+    const playlistsExists = callbacks.onGetAllPlaylists().length > 0;
+    mergePlaylistsBtn.style.display = playlistsExists ? 'flex' : 'none';
+}
+
 export function updatePlaylists(playlists) {    
+    console.log('Rendering playlists list.');
     playlistUl.textContent = '';
 
     playlists.forEach((playlist) => {
@@ -62,10 +78,6 @@ export function updatePlaylists(playlists) {
 }
 
 function renderLine(playlist) {
-    // let li = document.createElement('li');
-    // li.textContent = playlist.name;
-    // playlistUl.appendChild(li);
-
     playlistUl.innerHTML += 
     `<li class="playlist-item" data-id="${playlist.id}">
         <span>${playlist.name}</span>
